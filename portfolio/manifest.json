@@ -1,0 +1,16 @@
+{
+  "name": "Hotgi Creative — Web Desktop OS",
+  "short_name": "Hotgi Creative",
+  "description": "Interactive desktop-style portfolio OS of Mohammed Abdul Rahiman Hotgi.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#060911",
+  "theme_color": "#0a0e1a",
+  "icons": [
+    { "src": "tech.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "tech.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "tech.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

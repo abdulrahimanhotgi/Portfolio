@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Hotgi Creative — Web Desktop OS</title>
+<meta name="description" content="Hotgi Creative — Mohammed Abdul Rahiman Hotgi's interactive desktop-style portfolio OS.">
+<meta name="theme-color" content="#0a0e1a">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="tech.png" type="image/png">
+<link rel="apple-touch-icon" href="tech.png">
+    <link rel="icon" type="image/svg+xml" href="tech.png" />
+<meta name="google-site-verification" content="cHsAakuRlvVO_sQCma8x0uZZw8UVsSLLX389yPUziT8" />
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,400;0,600;1,400&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+
+<style>
+*{user-select:none;-webkit-user-select:none;box-sizing:border-box;margin:0;padding:0;font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,sans-serif;}
+html,body{width:100vw;height:100vh;overflow:hidden;background:#060911;color:#f8fafc;}
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:8px;}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.32);}
+.no-scrollbar::-webkit-scrollbar{display:none;}
+.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none;}
+
+.glass-panel{background:rgba(15,23,42,.78);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.12);}
+.glass-taskbar{background:rgba(8,11,20,.72);backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%);border-top:1px solid rgba(255,255,255,.1);box-shadow:0 -8px 40px rgba(0,0,0,.45);}
+.glass-window{background:#0b0f1a;border:1px solid rgba(255,255,255,.14);box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.03) inset;border-radius:16px;overflow:hidden;will-change:transform;}
+.window-body{background:#0b0f1a !important;display:flex;flex-direction:column;}
+.window-body > *:first-child:not(.hidden){width:100%;}
+.window-body:has(.gallery-frame:not(.hidden)){overflow:hidden;}
+.window-body:has(.gallery-frame:not(.hidden)) > .gallery-frame{flex:1;min-height:0;}
+.gallery-frame iframe{background:#0b0f1a;}
+
+#desktop{background-size:cover;background-position:center;transition:background-image .6s ease;height:calc(100vh - 48px);}
+
+.desktop-icon{width:92px;cursor:pointer;transition:transform .15s ease,background .2s ease;}
+.desktop-icon:hover{background:rgba(255,255,255,.08);transform:translateY(-2px);}
+.desktop-icon:active{transform:scale(.94);}
+.desktop-icon .icn-box{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;box-shadow:0 8px 20px rgba(0,0,0,.35);transition:transform .2s ease,box-shadow .2s ease;}
+.desktop-icon:hover .icn-box{transform:scale(1.08) rotate(-2deg);box-shadow:0 12px 28px rgba(0,0,0,.5);}
+.desktop-icon span{text-shadow:0 2px 6px rgba(0,0,0,.8);}
+
+.os-window{position:absolute;display:flex;flex-direction:column;min-width:280px;min-height:220px;}
+.os-window.minimized{display:none;}
+.os-window.maximized{top:0 !important;left:0 !important;width:100% !important;height:100% !important;border-radius:0;}
+.window-titlebar{cursor:move;}
+.window-control-btn{width:22px;height:22px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:10px;transition:transform .15s ease;}
+.window-control-btn:hover{transform:scale(1.12);}
+.window-body{scrollbar-gutter:stable;}
+
+.taskbar-item{transition:all .18s ease;}
+.taskbar-item.active{background:rgba(99,102,241,.35);border-color:rgba(129,140,248,.6) !important;}
+.taskbar-item.active::after{content:'';position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:#818cf8;}
+
+.glow-text{text-shadow:0 0 18px rgba(129,140,248,.55);}
+.hidden-menu{display:none;}
+.fade-in{animation:fadeIn .18s ease both;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.spin-slow{animation:spin 6s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.wp-card{cursor:pointer;transition:transform .18s ease,box-shadow .18s ease;position:relative;overflow:hidden;border-radius:14px;}
+.wp-card:hover{transform:scale(1.03);box-shadow:0 10px 26px rgba(0,0,0,.5);}
+.wp-card.active-wp{outline:3px solid #818cf8;}
+
+.gallery-card{cursor:pointer;transition:transform .18s ease,border-color .18s ease;}
+.gallery-card:hover{transform:translateY(-3px);border-color:rgba(129,140,248,.55) !important;}
+
+.back-bar{background:rgba(8,11,20,.92);border-bottom:1px solid rgba(255,255,255,.1);}
+.back-btn{transition:all .15s ease;}
+.back-btn:hover{background:rgba(129,140,248,.25) !important;}
+
+.status-dot{width:6px;height:6px;border-radius:50%;background:#34d399;box-shadow:0 0 8px #34d399;animation:pulseDot 1.8s ease-in-out infinite;}
+@keyframes pulseDot{0%,100%{opacity:1}50%{opacity:.4}}
+@media (max-width:768px){
+  .os-window{border-radius:12px;}
+}
+
+.cert-badge{background:linear-gradient(135deg,rgba(251,191,36,.18),rgba(217,119,6,.05));border:1px solid rgba(251,191,36,.35);}
+
+input,textarea{font-family:inherit;}
+.loading-spinner{border:3px solid rgba(255,255,255,.15);border-top-color:#818cf8;border-radius:50%;width:34px;height:34px;animation:spin .8s linear infinite;}
+
+.install-toast{animation:fadeIn .3s ease both;}
+
+/* BOOT SCREEN */
+#boot-screen{position:fixed;inset:0;background:#060911;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .5s ease,visibility .5s ease;}
+#boot-screen.boot-hide{opacity:0;visibility:hidden;pointer-events:none;}
+.boot-logo{width:72px;height:72px;border-radius:22px;background:linear-gradient(135deg,#6366f1,#d946ef);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;color:#fff;box-shadow:0 0 50px rgba(129,140,248,.5);animation:bootPulse 1.6s ease-in-out infinite;}
+@keyframes bootPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.boot-bar-track{width:220px;height:4px;border-radius:4px;background:rgba(255,255,255,.1);overflow:hidden;}
+.boot-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,#6366f1,#d946ef);border-radius:4px;transition:width .25s ease;}
+
+/* WINDOW APP LOADER */
+.app-loading-overlay{position:absolute;inset:0;background:#0b0f1a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:30;transition:opacity .25s ease;}
+.app-loading-overlay .loading-spinner{width:30px;height:30px;}
+</style>
+</head>
+<body>
+
+<!-- BOOT SCREEN -->
+<div id="boot-screen">
+  <div class="boot-logo">HC</div>
+  <div class="text-white font-bold text-sm tracking-wide">Hotgi Creative OS</div>
+  <div class="boot-bar-track"><div id="boot-bar-fill" class="boot-bar-fill"></div></div>
+  <div id="boot-status" class="text-[10px] text-white/40 font-mono">Booting system…</div>
+</div>
+
+<!-- DESKTOP -->
+<div id="desktop" class="w-full relative overflow-hidden" style="background-image:url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1920&auto=format&fit=crop');">
+  <div id="ambient-overlay" class="absolute inset-0 bg-gradient-to-br from-indigo-950/30 via-transparent to-slate-950/55 pointer-events-none"></div>
+
+  <!-- ICON GRID -->
+  <div id="icon-grid" class="relative z-10 p-4 grid gap-1 content-start" style="grid-template-columns:repeat(auto-fill,92px);"></div>
+
+  <!-- WIDGETS -->
+  <div class="hidden md:flex flex-col gap-3 absolute top-6 right-6 z-10 w-64 pointer-events-none">
+    <div class="glass-panel rounded-2xl p-4 pointer-events-auto">
+      <div id="widget-clock" class="text-3xl font-extrabold tracking-tight text-white glow-text font-mono">12:00:00 PM</div>
+      <div id="widget-date" class="text-xs text-indigo-300 font-semibold mt-0.5">—</div>
+      <div class="mt-3 pt-3 border-t border-white/10 flex items-center justify-between">
+        <span class="text-[10px] text-white/60">System Status</span>
+        <span id="sys-status-badge" class="text-[10px] text-emerald-400 font-mono"><i class="fa-solid fa-circle text-[6px] mr-1 align-middle"></i>100% Operational</span>
+      </div>
+      <div class="mt-2 space-y-1.5">
+        <div class="flex items-center justify-between text-[10px]"><span class="text-white/50">CPU</span><span id="cpu-load-text" class="font-mono text-indigo-300">14%</span></div>
+        <div class="h-1 rounded-full bg-white/10 overflow-hidden"><div id="cpu-bar" class="bg-indigo-500 h-full w-[14%] transition-all duration-500"></div></div>
+        <div class="flex items-center justify-between text-[10px]"><span class="text-white/50">RAM</span><span id="ram-load-text" class="font-mono text-cyan-300">2.4/16 GB</span></div>
+        <div class="h-1 rounded-full bg-white/10 overflow-hidden"><div id="ram-bar" class="bg-cyan-400 h-full w-[28%] transition-all duration-500"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="context-menu" class="hidden absolute glass-panel rounded-2xl py-2 w-56 z-50 shadow-2xl border border-white/20 text-xs"></div>
+  <div id="windows-container" class="absolute inset-0 pointer-events-none z-20"></div>
+
+  <!-- BOTTOM DOCK: Services & Control Panel (desktop view only) -->
+  <div id="bottom-dock" class="hidden md:flex fixed left-1/2 -translate-x-1/2 z-40 items-center gap-2 glass-panel rounded-2xl px-3 py-2 shadow-2xl border border-white/15" style="bottom:56px;">
+    <button onclick="openApp('services')" class="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-white/10 text-xs font-semibold text-white/90 transition-colors border border-transparent hover:border-white/10">
+      <div class="w-6 h-6 rounded-lg bg-gradient-to-tr from-rose-600 to-pink-500 flex items-center justify-center text-[10px]"><i class="fa-solid fa-briefcase"></i></div>Services
+    </button>
+    <div class="w-px h-5 bg-white/10"></div>
+    <button onclick="openApp('control-panel')" class="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-white/10 text-xs font-semibold text-white/90 transition-colors border border-transparent hover:border-white/10">
+      <div class="w-6 h-6 rounded-lg bg-gradient-to-tr from-gray-600 to-gray-800 flex items-center justify-center text-[10px]"><i class="fa-solid fa-sliders"></i></div>Control Panel
+    </button>
+  </div>
+</div>
+
+<!-- TASKBAR -->
+<div id="taskbar" class="glass-taskbar fixed bottom-0 left-0 w-full h-[48px] z-50 flex items-center justify-between px-3">
+  <div class="flex items-center gap-2 shrink-0">
+    <button id="start-btn" onclick="toggleStartMenu()" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-600/40 hover:bg-indigo-600/70 border border-indigo-400/40 text-white font-bold text-sm transition-all active:scale-95 shadow-lg">
+      <i class="fa-solid fa-border-all"></i><span class="hidden sm:inline text-xs">Start</span>
+    </button>
+    <button onclick="openAiBio()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-fuchsia-600/50 to-indigo-600/50 hover:from-fuchsia-600/70 hover:to-indigo-600/70 border border-fuchsia-400/40 text-white font-bold text-xs transition-all active:scale-95 shadow-lg">
+      <i class="fa-solid fa-robot"></i><span class="hidden sm:inline">AI</span>
+    </button>
+  </div>
+
+  <div id="taskbar-apps" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar flex-1 mx-2 px-1"></div>
+
+  <div class="flex items-center gap-1.5 shrink-0">
+    <button id="install-btn" onclick="triggerInstall()" class="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-white/80 text-xs font-semibold border border-white/10" title="Install App">
+      <i class="fa-solid fa-download"></i><span class="hidden sm:inline">Install</span>
+    </button>
+    <button onclick="toggleAudioSynth()" id="sound-btn" class="p-2 rounded-lg hover:bg-white/10 text-white/80 transition-colors" title="Sound"><i class="fa-solid fa-volume-high"></i></button>
+    <button onclick="toggleNotifCenter()" class="p-2 rounded-lg hover:bg-white/10 text-white/80 transition-colors" title="Notifications"><i class="fa-solid fa-bell"></i></button>
+    <div id="clock-widget" onclick="toggleDateTimePanel()" class="px-2.5 py-1 rounded-xl hover:bg-white/10 text-right cursor-pointer transition-colors flex flex-col justify-center">
+      <div id="taskbar-time" class="font-bold text-white text-xs leading-none font-mono">12:00 PM</div>
+      <div id="taskbar-date" class="text-[10px] text-white/60 leading-tight mt-0.5">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- START MENU -->
+<div id="start-menu" class="hidden-menu fixed bottom-16 left-3 w-80 sm:w-[420px] glass-panel rounded-3xl shadow-2xl p-5 z-50 border border-white/20 max-h-[78vh] overflow-y-auto">
+  <div class="flex items-center gap-3 mb-4">
+    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-500 to-fuchsia-500 flex items-center justify-center font-black text-white text-lg">HC</div>
+    <div><div class="font-bold text-white text-sm">Hotgi Creative</div><div class="text-[10px] text-white/50">Mohammed Abdul Rahiman Hotgi</div></div>
+  </div>
+  <div class="relative mb-4">
+    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-xs"></i>
+    <input type="text" id="start-search-input" onkeyup="filterStartApps()" placeholder="Search apps..." class="w-full bg-white/10 text-xs text-white placeholder-white/40 rounded-xl pl-9 pr-4 py-2.5 border border-white/15 focus:outline-none focus:border-indigo-400">
+  </div>
+  <div class="flex items-center justify-between mb-2 text-[10px] text-white/50"><span>All Apps</span><span id="search-count"></span></div>
+  <div id="start-apps-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-2.5 max-h-72 overflow-y-auto p-1"></div>
+</div>
+
+<!-- DATE & TIME PANEL -->
+<div id="datetime-panel" class="hidden-menu fixed bottom-16 right-3 w-80 sm:w-96 glass-panel rounded-3xl shadow-2xl p-5 z-50 border border-white/20 max-h-[80vh] overflow-y-auto">
+  <div class="text-center mb-4">
+    <div id="dt-panel-time" class="text-4xl font-black text-white glow-text font-mono tracking-tight">12:00:00 PM</div>
+    <div id="dt-panel-date" class="text-xs text-indigo-300 font-semibold mt-1">—</div>
+  </div>
+  <div class="grid grid-cols-3 gap-2 mb-4">
+    <div class="bg-white/5 rounded-xl p-2.5 text-center border border-white/10">
+      <div class="text-[9px] text-white/50 uppercase tracking-wide">Timezone</div>
+      <div id="dt-tz" class="text-[11px] font-bold text-white mt-0.5">—</div>
+    </div>
+    <div class="bg-white/5 rounded-xl p-2.5 text-center border border-white/10">
+      <div class="text-[9px] text-white/50 uppercase tracking-wide">Week</div>
+      <div id="dt-week" class="text-[11px] font-bold text-white mt-0.5">—</div>
+    </div>
+    <div class="bg-white/5 rounded-xl p-2.5 text-center border border-white/10">
+      <div class="text-[9px] text-white/50 uppercase tracking-wide">Day</div>
+      <div id="dt-day-num" class="text-[11px] font-bold text-white mt-0.5">—</div>
+    </div>
+  </div>
+  <div class="flex items-center justify-between mb-2">
+    <button onclick="calShiftMonth(-1)" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs flex items-center justify-center"><i class="fa-solid fa-chevron-left"></i></button>
+    <span id="cal-month-label" class="text-xs font-bold text-white">—</span>
+    <button onclick="calShiftMonth(1)" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs flex items-center justify-center"><i class="fa-solid fa-chevron-right"></i></button>
+  </div>
+  <div class="grid grid-cols-7 gap-1 text-center text-[9px] text-white/40 font-semibold mb-1">
+    <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+  </div>
+  <div id="cal-grid" class="grid grid-cols-7 gap-1 text-center text-[10px]"></div>
+  <button onclick="calGoToday()" class="w-full mt-3 text-[10px] font-semibold text-indigo-300 hover:text-indigo-200 bg-white/5 hover:bg-white/10 rounded-lg py-1.5 border border-white/10">Jump to Today</button>
+  <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-[10px] text-white/50">
+    <span>System Status</span>
+    <span class="text-emerald-400 font-mono flex items-center gap-1"><span class="status-dot"></span>Operational</span>
+  </div>
+</div>
+
+<!-- NOTIFICATION CENTER -->
+<div id="notification-center" class="hidden-menu fixed bottom-16 right-3 w-80 sm:w-96 glass-panel rounded-3xl shadow-2xl p-5 z-50 border border-white/20">
+  <h3 class="font-bold text-white text-sm mb-3"><i class="fa-solid fa-bell mr-2 text-indigo-400"></i>Notifications</h3>
+  <div class="space-y-2.5 max-h-80 overflow-y-auto">
+    <div class="bg-white/5 rounded-xl p-3 border border-white/10"><p class="text-xs font-semibold text-white">Welcome to Hotgi Creative OS</p><p class="text-[11px] text-white/60 mt-1">Click any icon on the desktop or taskbar to launch an app.</p></div>
+    <div class="bg-white/5 rounded-xl p-3 border border-white/10"><p class="text-xs font-semibold text-white">Meet the AI Assistant</p><p class="text-[11px] text-white/60 mt-1">Tap the AI button in the taskbar to read Rahiman's full bio.</p></div>
+    <div class="bg-white/5 rounded-xl p-3 border border-white/10"><p class="text-xs font-semibold text-white">Open to Work</p><p class="text-[11px] text-white/60 mt-1">Available for internships, freelance & full-time roles.</p></div>
+  </div>
+</div>
+
+<script>
+/* ============================= DATA ============================= */
+const CLIENT_PROJECTS=[
+ {name:'Eternal Luxury',url:'https://eternaluxury.netlify.app/',icon:'fa-gem',color:'from-amber-500 to-rose-500'},
+ {name:'Mehboob Printing Shop',url:'https://mehboob-printing-shop.netlify.app/',icon:'fa-print',color:'from-blue-500 to-cyan-500'},
+ {name:'RailSync',url:'https://railsync13.netlify.app/',icon:'fa-train',color:'from-slate-500 to-slate-700'},
+ {name:'National Bakery Shop',url:'https://nationalbakery-shop.netlify.app/',icon:'fa-bread-slice',color:'from-orange-500 to-amber-600'},
+ {name:'Pushpak Elevators Lift',url:'https://pushpak-elevators-lift.netlify.app/',icon:'fa-elevator',color:'from-indigo-500 to-blue-600'},
+ {name:'Pushpak Elevators',url:'https://pushpak-elevators.netlify.app/',icon:'fa-building',color:'from-indigo-500 to-violet-600'},
+ {name:'ZM Cake Walk',url:'https://zmcakewalk.netlify.app/',icon:'fa-cake-candles',color:'from-pink-500 to-rose-500'},
+ {name:'Sahara Tuition',url:'https://saharatution.netlify.app/',icon:'fa-graduation-cap',color:'from-emerald-500 to-teal-600'},
+ {name:'InfoStack',url:'https://infostack.netlify.app/',icon:'fa-layer-group',color:'from-cyan-500 to-blue-600'},
+ {name:'ASRA Medical',url:'https://asramedical.netlify.app/',icon:'fa-briefcase-medical',color:'from-red-500 to-rose-600'},
+ {name:'Health Homeopathic',url:'https://health-homeopathic1.netlify.app/',icon:'fa-leaf',color:'from-green-500 to-emerald-600'},
+ {name:'Yusha Aisha Collection',url:'https://yusha-aisha-collection.netlify.app/',icon:'fa-bag-shopping',color:'from-fuchsia-500 to-pink-600'},
+ {name:'Solapur Enterprises',url:'https://solapurenterprises.netlify.app/',icon:'fa-industry',color:'from-yellow-600 to-amber-700'},
+ {name:'National Bakery',url:'https://national-bakery.netlify.app/',icon:'fa-cookie-bite',color:'from-orange-600 to-red-500'}
+];
+const PERSONAL_PROJECTS=[
+ {name:'Hidayah Web',url:'https://hidayahweb.netlify.app/',icon:'fa-mosque',color:'from-emerald-500 to-green-700'},
+ {name:'DoQuick',url:'https://doquick.netlify.app/',icon:'fa-bolt',color:'from-indigo-500 to-purple-600'}
+];
+const APPLICATIONS=[
+ {name:'App One',url:'https://median.co/share/xldamlw#apk',icon:'fa-mobile-screen-button',color:'from-blue-500 to-indigo-600'},
+ {name:'App Two',url:'https://median.co/share/jrzybp#apk',icon:'fa-mobile-screen-button',color:'from-cyan-500 to-blue-600'},
+ {name:'App Three',url:'https://median.co/share/bnnnjyw#apk',icon:'fa-mobile-screen-button',color:'from-violet-500 to-indigo-600'},
+ {name:'App Four',url:'https://median.co/share/krrklmw#apk',icon:'fa-mobile-screen-button',color:'from-emerald-500 to-teal-600'},
+ {name:'App Five',url:'https://median.co/share/qdlmowz#apk',icon:'fa-mobile-screen-button',color:'from-amber-500 to-orange-600'},
+ {name:'App Six',url:'https://median.co/share/abzbdde#apk',icon:'fa-mobile-screen-button',color:'from-pink-500 to-rose-600'},
+ {name:'App Seven',url:'https://median.co/share/kjznye#apk',icon:'fa-mobile-screen-button',color:'from-lime-500 to-green-600'},
+ {name:'App Eight',url:'https://median.co/share/yexeqjn#apk',icon:'fa-mobile-screen-button',color:'from-sky-500 to-cyan-600'}
+];
+const SOCIALS=[
+ {name:'LinkedIn',url:'https://www.linkedin.com/in/abdul-rahiman-hotgi-49b998325/',icon:'fa-brands fa-linkedin',color:'from-blue-600 to-blue-800'},
+ {name:'Instagram',url:'https://www.instagram.com/hotgicreativeofficial/',icon:'fa-brands fa-instagram',color:'from-pink-500 to-purple-600'},
+ {name:'X / Twitter',url:'https://x.com/hotgicreative',icon:'fa-brands fa-x-twitter',color:'from-slate-700 to-black'},
+ {name:'GitHub',url:'https://github.com/abdulrahimanhotgi',icon:'fa-brands fa-github',color:'from-slate-600 to-slate-900'},
+ {name:'Instagram (Personal)',url:'https://www.instagram.com/abdulrahimanhotgi14/',icon:'fa-brands fa-instagram',color:'from-fuchsia-500 to-pink-600'},
+ {name:'WhatsApp 1',url:'https://wa.me/+919545647813',icon:'fa-brands fa-whatsapp',color:'from-green-500 to-green-700'},
+ {name:'WhatsApp 2',url:'https://wa.me/+918799898942',icon:'fa-brands fa-whatsapp',color:'from-green-500 to-green-700'},
+ {name:'YouTube',url:'https://www.youtube.com/@hotgicreative',icon:'fa-brands fa-youtube',color:'from-red-600 to-red-800'}
+];
+const WALLPAPERS=[
+ 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1920&auto=format&fit=crop',
+ 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1920&auto=format&fit=crop',
+ 'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=1920&auto=format&fit=crop',
+ 'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1920&auto=format&fit=crop',
+ 'https://images.unsplash.com/photo-1508614999368-9260051292e5?q=80&w=1920&auto=format&fit=crop',
+ 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=1920&auto=format&fit=crop',
+ 'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=1920&auto=format&fit=crop',
+ 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=1920&auto=format&fit=crop',
+ 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?q=80&w=1920&auto=format&fit=crop',
+ 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=1920&auto=format&fit=crop',
+ 'https://images.unsplash.com/photo-1502134249126-9f3755a50d78?q=80&w=1920&auto=format&fit=crop',
+ 'https://images.unsplash.com/photo-1497436072909-f5e4be1713e5?q=80&w=1920&auto=format&fit=crop',
+ 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1920&auto=format&fit=crop',
+ 'https://images.unsplash.com/photo-1470813740244-df37b8c1edcb?q=80&w=1920&auto=format&fit=crop',
+ 'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?q=80&w=1920&auto=format&fit=crop',
+ 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?q=80&w=1920&auto=format&fit=crop',
+ 'https://images.unsplash.com/photo-1550684376-efcbd6e3f031?q=80&w=1920&auto=format&fit=crop',
+ 'https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?q=80&w=1920&auto=format&fit=crop',
+ 'https://images.unsplash.com/photo-1528460033278-a6ba57020470?q=80&w=1920&auto=format&fit=crop',
+ 'https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=1920&auto=format&fit=crop'
+];
+
+/* generic gallery renderer -> grid with icons, click swaps to iframe + back bar (all inside same window) */
+function galleryHtml(appId,list,label){
+ let cards=list.map((p,i)=>`
+  <div class="gallery-card bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col items-center text-center gap-2" onclick="openGalleryItem('${appId}',${i})">
+    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr ${p.color||'from-indigo-500 to-purple-600'} flex items-center justify-center text-xl text-white shadow-lg">
+      <i class="${p.icon&&p.icon.includes('fa-brands')?p.icon:'fa-solid '+(p.icon||'fa-globe')}"></i>
+    </div>
+    <span class="text-xs font-semibold text-white/90">${p.name}</span>
+    <span class="text-[10px] text-indigo-300"><i class="fa-solid fa-arrow-up-right-from-square mr-1"></i>Open</span>
+  </div>`).join('');
+ return `<div id="gallery-grid-${appId}" class="p-5">
+   <div class="flex items-center justify-between mb-4">
+     <h2 class="text-sm font-bold text-white">${label}</h2>
+     <span class="text-[10px] px-2 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">${list.length} items</span>
+   </div>
+   <div class="grid gap-3" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr));">${cards}</div>
+ </div>
+ <div id="gallery-frame-${appId}" class="gallery-frame hidden w-full h-full flex-col" style="min-height:0;">
+   <div class="back-bar flex items-center gap-2 px-3 py-2 shrink-0">
+     <button class="back-btn flex items-center gap-1.5 text-xs font-semibold text-white bg-white/10 px-3 py-1.5 rounded-lg border border-white/10" onclick="closeGalleryItem('${appId}')">
+       <i class="fa-solid fa-arrow-left"></i> Back
+     </button>
+     <span id="gallery-frame-title-${appId}" class="text-xs text-white/70 truncate flex-1"></span>
+     <a id="gallery-newtab-${appId}" href="#" target="_blank" rel="noopener" class="text-[10px] text-indigo-300 hover:text-indigo-200 shrink-0"><i class="fa-solid fa-arrow-up-right-from-square mr-1"></i>Open in new tab</a>
+   </div>
+   <div class="flex-1 relative" style="min-height:0;">
+     <div id="gallery-loader-${appId}" class="absolute inset-0 flex items-center justify-center bg-[#0b0f1a] z-10"><div class="loading-spinner"></div></div>
+     <iframe id="gallery-iframe-${appId}" class="w-full h-full border-none block" style="background:#0b0f1a;" src="about:blank" loading="lazy" onload="document.getElementById('gallery-loader-${appId}').style.display='none'"></iframe>
+   </div>
+ </div>`;
+}
+const GALLERY_DATA={};
+function openGalleryItem(appId,i){
+ const item=GALLERY_DATA[appId][i];
+ $(`#gallery-grid-${appId}`).addClass('hidden');
+ $(`#gallery-frame-${appId}`).removeClass('hidden').addClass('flex');
+ $(`#gallery-frame-title-${appId}`).text(item.name);
+ $(`#gallery-newtab-${appId}`).attr('href',item.url);
+ $(`#gallery-loader-${appId}`).show();
+ $(`#gallery-iframe-${appId}`).attr('src',item.url);
+}
+function closeGalleryItem(appId){
+ $(`#gallery-frame-${appId}`).addClass('hidden').removeClass('flex');
+ $(`#gallery-grid-${appId}`).removeClass('hidden');
+ $(`#gallery-iframe-${appId}`).attr('src','about:blank');
+}
+
+/* ============================= APPS CONFIG ============================= */
+const APPS_CONFIG={
+ 'about':{title:'About Me',icon:'fa-user',color:'from-indigo-500 to-purple-600',width:760,height:560,body:()=>`
+  <div class="p-6 text-white space-y-4">
+   <div class="flex items-center gap-4">
+    <div class="w-16 h-16 rounded-2xl overflow-hidden bg-gradient-to-tr from-indigo-500 to-fuchsia-500 flex items-center justify-center font-black text-xl shrink-0">
+     <img src="me.jpeg" alt="Mohammed Abdul Rahiman Hotgi" class="w-full h-full object-cover" onerror="this.style.display='none';this.parentNode.innerHTML='MH';">
+    </div>
+    <div><h2 class="text-lg font-bold">Mohammed Abdul Rahiman Hotgi</h2><p class="text-xs text-indigo-300">Full-Stack Developer · AI/ML Diploma Student</p></div>
+   </div>
+   <p class="text-xs text-white/75 leading-relaxed">Full-stack developer and tech enthusiast currently pursuing a Diploma in Artificial Intelligence & Machine Learning (Third Year) at Vidya Vikas Pratishthan Polytechnic, Solapur. Believes in learning by building — exploring full-stack development, cloud infrastructure, AI/ML and design end to end.</p>
+   <div class="grid sm:grid-cols-2 gap-3 text-xs">
+    <div class="bg-white/5 rounded-xl p-3 border border-white/10"><b class="text-indigo-300">Location</b><br>Solapur, Maharashtra, India</div>
+    <div class="bg-white/5 rounded-xl p-3 border border-white/10"><b class="text-indigo-300">Education</b><br>Diploma in AI & ML, VVP Polytechnic</div>
+    <div class="bg-white/5 rounded-xl p-3 border border-white/10"><b class="text-indigo-300">Status</b><br>Open to internships, freelance & full-time roles</div>
+    <div class="bg-white/5 rounded-xl p-3 border border-white/10"><b class="text-indigo-300">Focus</b><br>Software, Cloud, AI/ML end-to-end</div>
+   </div>
+   <div class="pt-1">
+    <h3 class="text-xs font-bold text-indigo-300 mb-2">Quick Highlights</h3>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+     <div class="bg-white/5 rounded-xl p-3 text-center border border-white/10"><div class="text-lg font-black text-white">14+</div><div class="text-[10px] text-white/50">Client Projects</div></div>
+     <div class="bg-white/5 rounded-xl p-3 text-center border border-white/10"><div class="text-lg font-black text-white">8+</div><div class="text-[10px] text-white/50">Mobile Apps</div></div>
+     <div class="bg-white/5 rounded-xl p-3 text-center border border-white/10"><div class="text-lg font-black text-white">6+</div><div class="text-[10px] text-white/50">Languages</div></div>
+     <div class="bg-white/5 rounded-xl p-3 text-center border border-white/10"><div class="text-lg font-black text-white">100%</div><div class="text-[10px] text-white/50">Built to Deploy</div></div>
+    </div>
+   </div>
+   <div class="pt-1">
+    <h3 class="text-xs font-bold text-indigo-300 mb-2">What I Do</h3>
+    <div class="flex flex-wrap gap-1.5">
+     ${['Full-Stack Development','Flutter Mobile Apps','AI & Machine Learning','Cloud & DevOps (AWS/Docker/K8s)','Linux & Kali Security','UI/UX & Graphic Design','Video Editing','Data Analysis'].map(t=>`<span class="px-2.5 py-1 bg-indigo-500/15 rounded-full text-[10px] text-indigo-200 border border-indigo-500/25">${t}</span>`).join('')}
+    </div>
+   </div>
+   <div class="pt-1">
+    <h3 class="text-xs font-bold text-indigo-300 mb-2">Currently Learning</h3>
+    <p class="text-xs text-white/70 leading-relaxed">Deepening skills in Terraform, Kubernetes orchestration, and applied ML model deployment — while sharpening cybersecurity fundamentals with Kali Linux.</p>
+   </div>
+   <div class="pt-1">
+    <h3 class="text-xs font-bold text-indigo-300 mb-2">Philosophy</h3>
+    <p class="text-xs text-white/70 leading-relaxed italic">"I believe in learning by building — taking an idea from concept to deployment, end to end."</p>
+   </div>
+   <div class="flex flex-wrap gap-2 pt-2">
+    <button onclick="openAiBio()" class="text-xs font-semibold text-white bg-indigo-600/60 hover:bg-indigo-600/80 px-4 py-2 rounded-xl border border-indigo-400/40">Read Full AI Bio <i class="fa-solid fa-arrow-right ml-1"></i></button>
+    <button onclick="openApp('client-projects')" class="text-xs font-semibold text-white bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl border border-white/15">View Projects <i class="fa-solid fa-briefcase ml-1"></i></button>
+    <button onclick="openApp('contact')" class="text-xs font-semibold text-white bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl border border-white/15">Contact Me <i class="fa-solid fa-envelope ml-1"></i></button>
+   </div>
+  </div>`},
+
+ 'skills':{title:'Skills',icon:'fa-layer-group',color:'from-cyan-500 to-blue-600',width:800,height:580,body:()=>`
+  <div class="p-6 text-white space-y-4 text-xs">
+   ${skillBlock('Languages',['Python (Advanced)','Java (Core & Advanced)','C','C++','C#','R Programming'])}
+   ${skillBlock('App & Web',['Flutter','Full-Stack SaaS','Frontend','Backend','API Keys','Firebase'])}
+   ${skillBlock('AI / ML / Data',['Machine Learning','Artificial Intelligence','Data Analysis','R for statistics'])}
+   ${skillBlock('Cloud & DevOps',['AWS (S3, Transfer Family)','Docker','Kubernetes (K8s)','Terraform','Cloudflare'])}
+   ${skillBlock('Systems & Security',['Linux','Kali Linux (Advanced)','Git','GitHub'])}
+   ${skillBlock('Databases',['MySQL','MongoDB','NoSQL'])}
+   ${skillBlock('Design & Creative',['UI/UX Design','Logo & Graphics','AutoCAD 2D/3D','Video Editing','AI Songs'])}
+   ${skillBlock('Tools',['VS Code','IntelliJ IDEA','Cursor','JetBrains','Android Studio'])}
+   ${skillBlock('Business',['MS Word / Excel / PowerPoint','Tally Prime'])}
+  </div>`},
+
+ 'wallpaper':{title:'Wallpaper Studio',icon:'fa-image',color:'from-amber-500 to-orange-600',width:760,height:520,body:()=>`
+  <div class="p-6 text-white">
+   <h2 class="text-sm font-bold mb-1">Wallpaper Studio</h2>
+   <p class="text-xs text-white/60 mb-4">Pick a wallpaper or paste your own image URL.</p>
+   <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5 max-h-72 overflow-y-auto pr-1">
+    ${WALLPAPERS.map((w,i)=>`<div class="wp-card h-20" style="background:url('${w}') center/cover;" onclick="setWallpaper('${w}',this)"></div>`).join('')}
+   </div>
+   <div class="flex gap-2">
+    <input type="url" id="custom-wallpaper-input" placeholder="https://images.unsplash.com/your-image.jpg" class="flex-1 bg-white/10 border border-white/15 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-amber-400">
+    <button onclick="applyCustomWallpaper()" class="px-4 py-2 bg-amber-500/80 hover:bg-amber-400 rounded-xl text-xs font-bold text-black">Apply</button>
+   </div>
+  </div>`},
+
+ 'client-projects':{title:'Client Projects',icon:'fa-briefcase',color:'from-blue-600 to-cyan-500',width:900,height:600,isGallery:true,list:CLIENT_PROJECTS,label:'Client Work — Commercial Case Studies'},
+ 'personal-projects':{title:'Personal Projects',icon:'fa-flask',color:'from-emerald-600 to-teal-500',width:820,height:560,isGallery:true,list:PERSONAL_PROJECTS,label:'Personal Projects — R&D Lab'},
+ 'applications':{title:'Applications',icon:'fa-mobile-screen',color:'from-violet-600 to-indigo-500',width:820,height:580,isGallery:true,list:APPLICATIONS,label:'Applications — Download APKs'},
+
+ 'services':{title:'Services',icon:'fa-briefcase',color:'from-rose-600 to-pink-500',width:820,height:600,body:()=>`
+  <div class="p-6 text-white space-y-4 text-xs">
+   ${skillBlock('Software Development',['Full Stack Development','Web Development','Application Development','Game Development','SaaS Development'])}
+   ${skillBlock('Design',['Graphic Design','Logo Design','Video Editing','UI/UX Design'])}
+   ${skillBlock('Data & Business',['Data Analysis','AutoCAD','Tally Prime','MS Word / Excel / PowerPoint'])}
+   ${skillBlock('Cloud & Infra',['AWS','Docker','Kubernetes','Terraform','Firebase','Cloudflare'])}
+   ${skillBlock('Other',['SEO','Hosting & Deployment','Database Design (MySQL/MongoDB)'])}
+  </div>`},
+
+ 'certifications':{title:'Certifications',icon:'fa-certificate',color:'from-amber-500 to-yellow-600',width:900,height:600,isGallery:true,list:[{name:'Certificates',url:'https://hotgicreativecertificates.netlify.app/',icon:'fa-award',color:'from-amber-500 to-yellow-600'}],label:'Certifications & Verified Achievements'},
+ 'songs':{title:'Songs',icon:'fa-music',color:'from-fuchsia-500 to-purple-600',width:820,height:580,isGallery:true,list:[{name:'Hotgi Creative Audio',url:'https://hotgicreativeaudio.netlify.app/',icon:'fa-headphones',color:'from-fuchsia-500 to-purple-600'}],label:'Songs & Audio'},
+ 'photos':{title:'Photos',icon:'fa-camera',color:'from-sky-500 to-blue-600',width:900,height:600,isGallery:true,list:[{name:'Hotgi Creative Photos',url:'https://hotgicreativephotos.netlify.app/',icon:'fa-images',color:'from-sky-500 to-blue-600'}],label:'Photo Gallery'},
+ 'videos':{title:'Videos',icon:'fa-video',color:'from-red-500 to-rose-600',width:900,height:600,isGallery:true,list:[{name:'Hotgi Creative Video',url:'https://hotgicreativevideo.netlify.app/',icon:'fa-film',color:'from-red-500 to-rose-600'}],label:'Video Reel'},
+
+ 'contact':{title:'Contact',icon:'fa-envelope',color:'from-teal-500 to-emerald-600',width:860,height:620,body:()=>`
+  <div class="p-6 text-white space-y-5">
+   <div>
+    <h2 class="text-sm font-bold mb-3">Connect With Me</h2>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+     ${SOCIALS.map(s=>`<a href="${s.url}" target="_blank" rel="noopener" class="flex flex-col items-center gap-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl p-3 text-center transition-colors">
+       <div class="w-10 h-10 rounded-xl bg-gradient-to-tr ${s.color} flex items-center justify-center text-white text-sm"><i class="${s.icon}"></i></div>
+       <span class="text-[10px] text-white/80">${s.name}</span>
+      </a>`).join('')}
+    </div>
+   </div>
+   <form id="contact-form" class="space-y-3" onsubmit="return submitContactForm(event)">
+    <h3 class="text-xs font-bold text-teal-300">Send a Message</h3>
+    <input required name="name" type="text" placeholder="Your Name" class="w-full bg-white/10 border border-white/15 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-teal-400">
+    <input required name="email" type="email" placeholder="Your Email" class="w-full bg-white/10 border border-white/15 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-teal-400">
+    <input name="subject" type="text" placeholder="Description / Subject" class="w-full bg-white/10 border border-white/15 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-teal-400">
+    <textarea required name="message" rows="4" placeholder="Your Message" class="w-full bg-white/10 border border-white/15 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-teal-400"></textarea>
+    <button type="submit" class="w-full bg-teal-500/80 hover:bg-teal-400 text-black font-bold text-xs py-2.5 rounded-xl transition-colors">Submit</button>
+    <div id="contact-success" class="hidden mt-2 p-3 bg-emerald-500/20 border border-emerald-500/40 rounded-xl text-xs text-emerald-300 text-center">✓ Message sent successfully. Thank you!</div>
+    <div id="contact-error" class="hidden mt-2 p-3 bg-rose-500/20 border border-rose-500/40 rounded-xl text-xs text-rose-300 text-center">Something went wrong. Please try again.</div>
+   </form>
+  </div>`},
+
+ 'terminal':{title:'Terminal',icon:'fa-terminal',color:'from-slate-700 to-slate-900',width:760,height:500,body:()=>`
+  <div class="p-4 h-full flex flex-col bg-black/40 font-mono">
+   <div id="cli-output" class="flex-1 overflow-y-auto space-y-1 pr-2 text-xs text-emerald-400">
+    <div>Hotgi Creative Terminal v1.0 — type <span class="text-cyan-300">help</span> to get started.</div>
+   </div>
+   <div class="flex items-center gap-2 mt-2 border-t border-white/10 pt-2">
+    <span class="text-emerald-400 text-xs">➜</span>
+    <input type="text" id="cli-input" onkeydown="handleCliKeyDown(event)" autofocus class="flex-1 bg-transparent border-none text-emerald-400 font-mono text-xs focus:outline-none placeholder-emerald-800" placeholder="type command...">
+   </div>
+  </div>`},
+
+ 'control-panel':{title:'Control Panel',icon:'fa-sliders',color:'from-gray-600 to-gray-800',width:760,height:560,body:()=>`
+  <div class="p-6 text-white space-y-4 text-xs">
+   <h2 class="text-sm font-bold mb-2">Control Panel</h2>
+   <div class="bg-white/5 rounded-xl p-4 border border-white/10 flex items-center justify-between">
+    <div><b>System Sound</b><p class="text-white/50 text-[10px]">Enable UI click / open sound effects</p></div>
+    <button onclick="toggleAudioSynth()" class="px-3 py-1.5 rounded-lg bg-indigo-600/50 hover:bg-indigo-600/70 border border-indigo-400/40 font-semibold">Toggle</button>
+   </div>
+   <div class="bg-white/5 rounded-xl p-4 border border-white/10 flex items-center justify-between">
+    <div><b>Wallpaper</b><p class="text-white/50 text-[10px]">Open the Wallpaper Studio</p></div>
+    <button onclick="openApp('wallpaper')" class="px-3 py-1.5 rounded-lg bg-amber-500/60 hover:bg-amber-500/80 border border-amber-400/40 font-semibold">Open</button>
+   </div>
+   <div class="bg-white/5 rounded-xl p-4 border border-white/10 flex items-center justify-between">
+    <div><b>Minimize All Windows</b><p class="text-white/50 text-[10px]">Hide every open app window</p></div>
+    <button onclick="minimizeAllWindows()" class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 font-semibold">Run</button>
+   </div>
+   <div class="bg-white/5 rounded-xl p-4 border border-white/10 flex items-center justify-between">
+    <div><b>Install App</b><p class="text-white/50 text-[10px]">Add Hotgi Creative OS to your device</p></div>
+    <button onclick="triggerInstall()" class="px-3 py-1.5 rounded-lg bg-emerald-500/60 hover:bg-emerald-500/80 border border-emerald-400/40 font-semibold">Install</button>
+   </div>
+   <div class="bg-white/5 rounded-xl p-4 border border-white/10">
+    <b>About This OS</b>
+    <p class="text-white/50 text-[10px] mt-1">Hotgi Creative Web Desktop OS — a fully responsive, installable portfolio experience. Version 1.0.</p>
+   </div>
+  </div>`}
+};
+function skillBlock(title,items){
+ return `<div class="bg-white/5 rounded-xl p-3.5 border border-white/10">
+  <b class="text-cyan-300 text-xs">${title}</b>
+  <div class="flex flex-wrap gap-1.5 mt-2">${items.map(i=>`<span class="px-2.5 py-1 bg-white/10 rounded-full text-[10px] text-white/80 border border-white/10">${i}</span>`).join('')}</div>
+ </div>`;
+}
+/* register gallery data */
+['client-projects','personal-projects','applications','certifications','songs','photos','videos'].forEach(id=>{GALLERY_DATA[id]=APPS_CONFIG[id].list;});
+
+const ICON_GRID_ORDER=['about','skills','wallpaper','client-projects','personal-projects','applications','songs','certifications','photos','videos','contact','terminal'];
+const DESKTOP_ICON_ORDER=ICON_GRID_ORDER.concat(['control-panel','services']);
+const DOCK_ORDER=['services','control-panel'];
+
+/* ============================= WINDOW MANAGER ============================= */
+let activeWindows={};
+let topZIndex=100;
+let focusedApp=null;
+
+function buildIconGrid(){
+ let html='';
+ ICON_GRID_ORDER.forEach(id=>{
+  const c=APPS_CONFIG[id];
+  html+=`<div class="desktop-icon flex flex-col items-center p-2 rounded-2xl text-center gap-1.5" ondblclick="openApp('${id}')" onclick="handleIconTap('${id}')" title="${c.title}">
+   <div class="icn-box bg-gradient-to-tr ${c.color}"><i class="fa-solid ${c.icon}"></i></div>
+   <span class="text-[11px] font-semibold text-white">${c.title}</span>
+  </div>`;
+ });
+ $('#icon-grid').html(html);
+}
+let lastTap={};
+function handleIconTap(id){
+ // mobile-friendly single tap open, desktop uses double click too but single works fine
+ openApp(id);
+}
+
+function playSound(type){
+ if(!window.__soundOn) return;
+ try{
+  const ctx=window.__audioCtx||(window.__audioCtx=new (window.AudioContext||window.webkitAudioContext)());
+  const o=ctx.createOscillator(),g=ctx.createGain();
+  o.connect(g);g.connect(ctx.destination);
+  o.frequency.value= type==='open'?520:type==='close'?260:400;
+  g.gain.setValueAtTime(0.05,ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+0.18);
+  o.start();o.stop(ctx.currentTime+0.18);
+ }catch(e){}
+}
+window.__soundOn=true;
+function toggleAudioSynth(){
+ window.__soundOn=!window.__soundOn;
+ $('#sound-btn i').attr('class', window.__soundOn?'fa-solid fa-volume-high':'fa-solid fa-volume-xmark');
+}
+
+function openApp(appId){
+ playSound('open');
+ const config=APPS_CONFIG[appId];
+ if(!config) return;
+ if(activeWindows[appId]){
+  $(`#win-${appId}`).removeClass('minimized');
+  focusWindow(appId);
+  return;
+ }
+ topZIndex++;
+ const vw=window.innerWidth, vh=window.innerHeight;
+ const isMobile=vw<768;
+ const isTablet=vw>=768 && vw<1100;
+ const openCount=Object.keys(activeWindows).length;
+ const availH=vh-48;
+ let cw=config.width, ch=config.height;
+ if(isTablet){ cw=Math.min(cw,vw-60); ch=Math.min(ch,availH-40); }
+ const winWidth=isMobile?'96%':`${Math.min(cw,vw-40)}px`;
+ const winHeight=isMobile?'84%':`${Math.min(ch,availH-30)}px`;
+ const effW=isMobile?vw*0.96:Math.min(cw,vw-40);
+ const effH=isMobile?vh*0.84:Math.min(ch,availH-30);
+ const posX=isMobile?'2%':`${Math.max(10,Math.min(vw-effW-20,40+(openCount*24)))}px`;
+ const posY=isMobile?'2%':`${Math.max(10,Math.min(availH-effH-10,30+(openCount*24)))}px`;
+
+ const bodyContent=config.isGallery?galleryHtml(appId,config.list,config.label):config.body();
+
+ const windowHtml=`
+  <div id="win-${appId}" class="os-window glass-window pointer-events-auto fade-in" style="width:${winWidth};height:${winHeight};top:${posY};left:${posX};z-index:${topZIndex};">
+   <div class="window-titlebar bg-slate-900/90 px-4 py-2.5 flex items-center justify-between border-b border-white/10">
+    <div class="flex items-center gap-2.5 min-w-0">
+     <div class="w-5 h-5 rounded-md bg-gradient-to-tr ${config.color} flex items-center justify-center text-[10px] text-white shrink-0"><i class="fa-solid ${config.icon}"></i></div>
+     <span class="text-xs font-bold text-white/90 tracking-wide truncate">${config.title}</span>
+    </div>
+    <div class="flex items-center gap-2 shrink-0">
+     <button onclick="minimizeWindow('${appId}')" class="window-control-btn bg-amber-500/80 hover:bg-amber-400 text-black" title="Minimize"><i class="fa-solid fa-minus"></i></button>
+     <button onclick="maximizeWindow('${appId}')" class="window-control-btn bg-emerald-500/80 hover:bg-emerald-400 text-black" title="Maximize"><i class="fa-solid fa-expand"></i></button>
+     <button onclick="closeWindow('${appId}')" class="window-control-btn bg-rose-500/80 hover:bg-rose-400 text-black" title="Close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+   </div>
+   <div class="window-body flex-1 overflow-y-auto relative bg-slate-950/40">
+    <div class="app-loading-overlay" id="loading-${appId}">
+     <div class="loading-spinner"></div>
+     <span class="text-[10px] text-white/50 font-mono">Loading ${config.title}…</span>
+    </div>
+    ${bodyContent}
+   </div>
+  </div>`;
+ $('#windows-container').append(windowHtml);
+ activeWindows[appId]=true;
+
+ setTimeout(()=>{ $(`#loading-${appId}`).css('opacity',0); setTimeout(()=>$(`#loading-${appId}`).remove(),260); }, 320+Math.random()*220);
+
+ if(!isMobile){
+  $(`#win-${appId}`).draggable({handle:'.window-titlebar',containment:'#desktop',start:function(){focusWindow(appId);}})
+   .resizable({minWidth:320,minHeight:240,containment:'#desktop'});
+ }
+ $(`#win-${appId}`).on('mousedown touchstart',function(){focusWindow(appId);});
+
+ addTaskbarApp(appId,config);
+ focusWindow(appId);
+
+ if(appId==='terminal') setTimeout(()=>$('#cli-input').focus(),150);
+}
+
+function focusWindow(appId){
+ topZIndex++;
+ $(`#win-${appId}`).css('z-index',topZIndex);
+ $('.taskbar-item').removeClass('active');
+ $(`#taskbar-item-${appId}`).addClass('active');
+ focusedApp=appId;
+}
+function minimizeWindow(appId){
+ $(`#win-${appId}`).addClass('minimized');
+ $(`#taskbar-item-${appId}`).removeClass('active');
+ if(focusedApp===appId) focusedApp=null;
+}
+function maximizeWindow(appId){
+ $(`#win-${appId}`).toggleClass('maximized');
+ focusWindow(appId);
+}
+function closeWindow(appId){
+ playSound('close');
+ $(`#win-${appId}`).remove();
+ $(`#taskbar-item-${appId}`).remove();
+ delete activeWindows[appId];
+ if(focusedApp===appId) focusedApp=null;
+}
+function minimizeAllWindows(){ Object.keys(activeWindows).forEach(minimizeWindow); }
+
+function addTaskbarApp(appId,config){
+ const html=`<button id="taskbar-item-${appId}" onclick="toggleTaskbarApp('${appId}')" class="taskbar-item active relative flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-white/10 text-xs text-white/90 font-medium border border-white/10 shrink-0">
+  <i class="fa-solid ${config.icon}"></i><span class="hidden sm:inline">${config.title}</span></button>`;
+ $('#taskbar-apps').append(html);
+}
+function toggleTaskbarApp(appId){
+ const win=$(`#win-${appId}`);
+ if(win.hasClass('minimized')){ win.removeClass('minimized'); focusWindow(appId); }
+ else if(focusedApp===appId){ minimizeWindow(appId); }
+ else { focusWindow(appId); }
+}
+
+/* ============================= AI BIO ============================= */
+function openAiBio(){
+ if(APPS_CONFIG['ai-bio']) { openApp('ai-bio'); return; }
+ APPS_CONFIG['ai-bio']={title:'AI Assistant — Bio',icon:'fa-robot',color:'from-fuchsia-500 to-indigo-600',width:820,height:620,body:()=>`
+  <div class="p-6 text-white space-y-3 text-xs leading-relaxed">
+   <div class="flex items-center gap-3 mb-2">
+    <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-fuchsia-500 to-indigo-600 flex items-center justify-center"><i class="fa-solid fa-robot text-lg"></i></div>
+    <div><h2 class="text-sm font-bold">Hotgi AI — About Rahiman</h2><p class="text-[10px] text-white/50">Auto-generated bio assistant</p></div>
+   </div>
+   <p>I'm <b>Mohammed Abdul Rahiman Hotgi</b>, a full-stack developer and tech enthusiast currently pursuing my Diploma in Artificial Intelligence & Machine Learning (Third Year) at Vidya Vikas Pratishthan Polytechnic, Solapur. I believe in learning by building. Beyond my classroom syllabus, I've explored full-stack development, cloud infrastructure, AI/ML, and design, aiming to become an engineer who can take an idea from concept to deployment, end to end.</p>
+   <p><b class="text-fuchsia-300">Programming and Development</b> — I work across Python (with advanced concepts), Java (Core and Advanced), C, C++, and C#. I build full-stack SaaS applications and cross-platform mobile apps using Flutter, focusing on clean, scalable, production-ready code.</p>
+   <p><b class="text-fuchsia-300">AI, Machine Learning and Data</b> — As an AI & ML diploma student, I'm deeply invested in Machine Learning and Artificial Intelligence, from building models to understanding the math behind them. I also use R Programming for statistical computing and data analysis.</p>
+   <p><b class="text-fuchsia-300">Cloud and DevOps</b> — I'm building strong foundations in AWS (including S3 Buckets and AWS Transfer Family), Docker, Kubernetes (K8s), and Terraform, and I'm comfortable deploying and managing containerized applications.</p>
+   <p><b class="text-fuchsia-300">Linux and Systems</b> — I work extensively with Linux and Kali Linux (Advanced), supporting both my development workflow and my interest in cybersecurity.</p>
+   <p><b class="text-fuchsia-300">Design and Creative Tools</b> — I also design UI/UX experiences, create logos and graphics, work with AutoCAD, and edit videos, believing good design and good engineering go hand in hand.</p>
+   <p><b class="text-fuchsia-300">Productivity and Business Tools</b> — I'm proficient in MS Word, MS Excel, MS PowerPoint, and Tally Prime, helping me bridge technical work and business needs.</p>
+   <p><b class="text-fuchsia-300">What's Next</b> — I want to become a well-rounded engineer who can architect, build, secure, and deploy complete solutions across software, cloud, and AI. I am actively seeking job opportunities, internships, and freelance projects in software development, full-stack engineering, cloud computing, or AI/ML. If you're hiring or know of a good fit, I'd love to connect and talk.</p>
+   <div class="grid grid-cols-2 gap-2 pt-2">
+    <div class="bg-white/5 rounded-xl p-2.5 border border-white/10"><b class="text-white/50 text-[10px]">Location</b><br>Solapur, Maharashtra, India</div>
+    <div class="bg-white/5 rounded-xl p-2.5 border border-white/10"><b class="text-white/50 text-[10px]">Status</b><br>Currently open to work</div>
+   </div>
+   <button onclick="openApp('contact')" class="mt-2 text-xs font-semibold text-white bg-fuchsia-600/60 hover:bg-fuchsia-600/80 px-4 py-2 rounded-xl border border-fuchsia-400/40">Get in Touch <i class="fa-solid fa-arrow-right ml-1"></i></button>
+  </div>`};
+ openApp('ai-bio');
+}
+
+/* ============================= WALLPAPER ============================= */
+function setWallpaper(url,el){
+ $('#desktop').css('background-image',`url('${url}')`);
+ $('.wp-card').removeClass('active-wp');
+ if(el) $(el).addClass('active-wp');
+ localStorage.setItem('hotgi_wallpaper',url);
+}
+function applyCustomWallpaper(){
+ const v=$('#custom-wallpaper-input').val().trim();
+ if(v) setWallpaper(v,null);
+}
+
+/* ============================= CONTACT FORM ============================= */
+function submitContactForm(e){
+ e.preventDefault();
+ const form=e.target;
+ const data=new FormData(form);
+ fetch('https://formspree.io/f/mzzbqywy',{method:'POST',body:data,headers:{'Accept':'application/json'}})
+  .then(r=>{ if(r.ok){ $('#contact-success').removeClass('hidden'); $('#contact-error').addClass('hidden'); form.reset(); } else { $('#contact-error').removeClass('hidden'); } })
+  .catch(()=>{ $('#contact-error').removeClass('hidden'); });
+ return false;
+}
+
+/* ============================= TERMINAL ============================= */
+const CLI_COMMANDS={
+ help:()=>'Available: help, about, skills, apps, contact, clear, whoami, date, open <app>',
+ about:()=>'Mohammed Abdul Rahiman Hotgi — Full-Stack Developer & AI/ML student, Solapur, India.',
+ skills:()=>'Python, Java, C/C++/C#, Flutter, AWS, Docker, K8s, Linux, AI/ML, UI/UX & more. Open the Skills app for full list.',
+ apps:()=>DESKTOP_ICON_ORDER.join(', '),
+ whoami:()=>'guest@hotgi-os',
+ date:()=>new Date().toString(),
+ contact:()=>'Open the Contact app or email via the form — Formspree ID mzzbqywy.',
+ clear:()=>{ $('#cli-output').empty(); return null; }
+};
+function handleCliKeyDown(e){
+ if(e.key!=='Enter') return;
+ const val=$('#cli-input').val().trim();
+ $('#cli-input').val('');
+ if(!val) return;
+ $('#cli-output').append(`<div class="text-white/70">➜ ${val}</div>`);
+ const parts=val.split(' ');
+ const cmd=parts[0].toLowerCase();
+ if(cmd==='open' && parts[1] && APPS_CONFIG[parts[1]]){ openApp(parts[1]); $('#cli-output').append(`<div class="text-cyan-300">Opening ${parts[1]}...</div>`); }
+ else if(CLI_COMMANDS[cmd]){ const out=CLI_COMMANDS[cmd](); if(out) $('#cli-output').append(`<div class="text-emerald-300">${out}</div>`); }
+ else { $('#cli-output').append(`<div class="text-rose-400">Command not found: ${cmd}. Type 'help'.</div>`); }
+ const box=document.getElementById('cli-output'); box.scrollTop=box.scrollHeight;
+}
+
+/* ============================= START MENU / SEARCH ============================= */
+function toggleStartMenu(){ $('#notification-center,#datetime-panel').addClass('hidden-menu'); $('#start-menu').toggleClass('hidden-menu'); buildStartGrid(); }
+function toggleNotifCenter(){ $('#start-menu,#datetime-panel').addClass('hidden-menu'); $('#notification-center').toggleClass('hidden-menu'); }
+function toggleDateTimePanel(){
+ $('#start-menu,#notification-center').addClass('hidden-menu');
+ $('#datetime-panel').toggleClass('hidden-menu');
+ if(!$('#datetime-panel').hasClass('hidden-menu')){ calViewDate=new Date(); renderCalendar(); }
+}
+function buildStartGrid(filter=''){
+ let html='';
+ let count=0;
+ DESKTOP_ICON_ORDER.concat(['ai-bio']).forEach(id=>{
+  const c=id==='ai-bio'?{title:'AI Assistant',icon:'fa-robot',color:'from-fuchsia-500 to-indigo-600'}:APPS_CONFIG[id];
+  if(!c) return;
+  if(filter && !c.title.toLowerCase().includes(filter.toLowerCase())) return;
+  count++;
+  html+=`<div class="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-white/10 cursor-pointer" onclick="${id==='ai-bio'?'openAiBio()':`openApp('${id}')`}; toggleStartMenu();">
+   <div class="w-10 h-10 rounded-xl bg-gradient-to-tr ${c.color} flex items-center justify-center text-white text-sm"><i class="fa-solid ${c.icon}"></i></div>
+   <span class="text-[10px] text-white/80 text-center leading-tight">${c.title}</span></div>`;
+ });
+ $('#start-apps-grid').html(html);
+ $('#search-count').text(count+' apps');
+}
+function filterStartApps(){ buildStartGrid($('#start-search-input').val()); }
+
+$(document).on('click',function(e){
+ if(!$(e.target).closest('#start-menu,#start-btn').length) $('#start-menu').addClass('hidden-menu');
+ if(!$(e.target).closest('#notification-center,#clock-widget').length) $('#notification-center').addClass('hidden-menu');
+ if(!$(e.target).closest('#datetime-panel,#clock-widget').length) $('#datetime-panel').addClass('hidden-menu');
+});
+
+/* ============================= CALENDAR ============================= */
+let calViewDate=new Date();
+const MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function calShiftMonth(delta){ calViewDate=new Date(calViewDate.getFullYear(),calViewDate.getMonth()+delta,1); renderCalendar(); }
+function calGoToday(){ calViewDate=new Date(); renderCalendar(); }
+function renderCalendar(){
+ const today=new Date();
+ const y=calViewDate.getFullYear(), m=calViewDate.getMonth();
+ $('#cal-month-label').text(MONTH_NAMES[m]+' '+y);
+ const firstDay=new Date(y,m,1).getDay();
+ const daysInMonth=new Date(y,m+1,0).getDate();
+ let html='';
+ for(let i=0;i<firstDay;i++) html+='<span></span>';
+ for(let d=1;d<=daysInMonth;d++){
+  const isToday=d===today.getDate()&&m===today.getMonth()&&y===today.getFullYear();
+  html+=`<span class="py-1 rounded-lg ${isToday?'bg-indigo-500 text-white font-bold':'text-white/70 hover:bg-white/10'}">${d}</span>`;
+ }
+ $('#cal-grid').html(html);
+ $('#dt-week').text('W'+getWeekNumber(today));
+ $('#dt-day-num').text(today.getDate()+'/'+daysInMonth);
+ $('#dt-tz').text(Intl.DateTimeFormat().resolvedOptions().timeZone.split('/').pop().replace('_',' '));
+}
+function getWeekNumber(d){
+ d=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+ d.setUTCDate(d.getUTCDate()+4-(d.getUTCDay()||7));
+ const yearStart=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+ return Math.ceil((((d-yearStart)/86400000)+1)/7);
+}
+
+/* ============================= CLOCK / STATS / GPU ============================= */
+function pad(n){return n<10?'0'+n:n;}
+function tickClock(){
+ const d=new Date();
+ let h=d.getHours(),ampm=h>=12?'PM':'AM'; h=h%12; h=h?h:12;
+ const t=`${h}:${pad(d.getMinutes())}:${pad(d.getSeconds())} ${ampm}`;
+ const t2=`${h}:${pad(d.getMinutes())} ${ampm}`;
+ const dateStr=d.toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+ const dateShort=d.toISOString().slice(0,10);
+ $('#widget-clock').text(t); $('#widget-date').text(dateStr);
+ $('#taskbar-time').text(t2); $('#taskbar-date').text(dateShort);
+ $('#dt-panel-time').text(t); $('#dt-panel-date').text(dateStr);
+}
+function tickStats(){
+ const cpu=Math.floor(8+Math.random()*30), ram=(2+Math.random()*3).toFixed(1);
+ $('#cpu-load-text').text(cpu+'%'); $('#cpu-bar').css('width',cpu+'%');
+ $('#ram-load-text').text(ram+'/16 GB'); $('#ram-bar').css('width',((ram/16)*100)+'%');
+}
+setInterval(tickClock,1000); setInterval(tickStats,2200);
+
+/* ============================= INSTALL / PWA ============================= */
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',(e)=>{ e.preventDefault(); deferredPrompt=e; $('#install-btn').removeClass('hidden').addClass('flex'); });
+window.addEventListener('appinstalled',()=>{ deferredPrompt=null; $('#install-btn').html('<i class="fa-solid fa-circle-check"></i><span class="hidden sm:inline">Installed</span>'); });
+function triggerInstall(){
+ if(deferredPrompt){
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.finally(()=>{deferredPrompt=null;});
+  return;
+ }
+ const ua=navigator.userAgent;
+ let msg='To install: open your browser menu and choose "Install App" or "Add to Home Screen".';
+ if(/Firefox/i.test(ua)) msg='Firefox: open the address bar menu (⋮) and choose "Install" — or use the page-actions icon next to the URL bar.';
+ else if(/Edg\//i.test(ua)) msg='Edge: click the install icon (a small screen with a down arrow) at the right side of the address bar, or Menu (…) → Apps → Install this site as an app.';
+ else if(/Chrome/i.test(ua) && !/Brave/i.test(ua)) msg='Chrome: click the install icon in the address bar, or Menu (⋮) → Cast, save and share → Install page as app.';
+ else if(/Brave/i.test(navigator.brave)||/Brave/i.test(ua)) msg='Brave: click the install icon in the address bar, or Menu (☰) → Install this site as an app.';
+ else if(/Safari/i.test(ua) && !/Chrome/i.test(ua)) msg='Safari: click Share (⬆) then "Add to Dock" (macOS) or "Add to Home Screen" (iOS).';
+ alert(msg);
+}
+if('serviceWorker' in navigator){
+ window.addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
+}
+
+/* ============================= INIT ============================= */
+$(function(){
+ buildIconGrid();
+ tickClock(); tickStats(); renderCalendar();
+ const saved=localStorage.getItem('hotgi_wallpaper');
+ if(saved) $('#desktop').css('background-image',`url('${saved}')`);
+ runBootSequence();
+});
+
+function runBootSequence(){
+ const steps=['Booting system…','Loading desktop shell…','Mounting portfolio drive…','Starting AI core…','Almost ready…'];
+ let i=0, pct=0;
+ const iv=setInterval(()=>{
+  pct=Math.min(100,pct+18+Math.random()*12);
+  $('#boot-bar-fill').css('width',pct+'%');
+  if(i<steps.length) $('#boot-status').text(steps[i++]);
+  if(pct>=100){
+   clearInterval(iv);
+   setTimeout(()=>{
+    $('#boot-screen').addClass('boot-hide');
+    setTimeout(()=>{ $('#boot-screen').remove(); openApp('about'); },500);
+   },250);
+  }
+ },260);
+}
+</script>
+</body>
+</html>
